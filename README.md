@@ -173,6 +173,61 @@ To change the language of the model and see which languages are available in our
 --- 
 <br>
 
+## Docker/Inferenz 🐳
+
+Für eine containerisierte Inferenz steht eine einfache Dockerfile bereit. Sie installiert Python 3.10 sowie die in der
+README gelisteten Systempakete (unter Debian/Ubuntu heißt `libasound-dev` als Paket `libasound2-dev`). Das Image läuft
+als nicht-root User.
+
+**Build**
+
+```
+docker build -t ims-toucan:local .
+```
+
+**Inference mit Docker**
+
+Model-Downloads werden in `Models/` und `Corpora/` gespeichert (siehe `Utility/storage_config.py`). Für persistente
+Downloads die Verzeichnisse als Volumes mounten:
+
+```
+docker run --rm -it \
+  -v toucan-models:/app/Models \
+  -v toucan-corpora:/app/Corpora \
+  ims-toucan:local \
+  python run_text_to_file_reader.py
+```
+
+Für Audioausgabe über `read_aloud` ist ggf. zusätzlich der Zugriff auf das Sound-Device nötig, z. B.:
+
+```
+docker run --rm -it --device /dev/snd \
+  -v toucan-models:/app/Models \
+  -v toucan-corpora:/app/Corpora \
+  ims-toucan:local \
+  python run_simple_GUI_demo.py
+```
+
+**Docker Compose (optional)**
+
+Wenn du `docker-compose.yml` verwendest, werden die Standardpfade aus `Utility/storage_config.py` persistiert:
+
+```
+docker compose run --rm toucan python run_text_to_file_reader.py
+```
+
+Wenn du `MODEL_DIR` oder `PREPROCESSING_DIR` in `Utility/storage_config.py` änderst, passe die Volumes in
+`docker-compose.yml` entsprechend an oder mounte das geänderte `Utility/storage_config.py` in den Container.
+
+**Security & Architekturhinweise**
+
+- Das Image läuft ohne Root-Rechte; vermeide zusätzliche Privilegien und mounte nur benötigte Host-Pfade.
+- Für GPU-Inferenz ist eine zusätzliche Runtime (z. B. NVIDIA Container Toolkit) nötig; das ist bewusst nicht in der
+  Dockerfile verdrahtet, um die Basis schlank und portabel zu halten.
+
+--- 
+<br>
+
 ## Creating a new Recipe (Training Pipeline) 🐣
 
 In the directory called
