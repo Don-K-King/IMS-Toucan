@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  toucan:
+    build: .
+    image: ims-toucan:local
+    volumes:
+      - toucan-models:/app/Models
+      - toucan-corpora:/app/Corpora
+
+volumes:
+  toucan-models:
+  toucan-corpora:
